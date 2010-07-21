@@ -1,38 +1,55 @@
-CompilerIf #PB_Compiler_Thread ;>
-  #ObjectManager = "compilers/objectmanagerthread.a"
-CompilerElse ;=
-  #ObjectManager = "compilers/objectmanager.a"
-CompilerEndIf;<
+; Macros for double quotes
+Macro DQuote
+  "
+EndMacro
+; Define the ImportLib
+CompilerSelect #PB_Compiler_Thread
+  CompilerCase #False ;{ THREADSAFE : OFF
+    CompilerSelect #PB_Compiler_OS
+      CompilerCase #PB_OS_Linux         : #Power_ObjectManagerLib = #PB_Compiler_Home + "compilers/objectmanager.a"
+      CompilerCase #PB_OS_Windows   : #Power_ObjectManagerLib = #PB_Compiler_Home + "compilers\ObjectManager.lib"
+    CompilerEndSelect
+  ;}
+  CompilerCase #True ;{ THREADSAFE : ON
+    CompilerSelect #PB_Compiler_OS
+      CompilerCase #PB_OS_Linux         : #Power_ObjectManagerLib = #PB_Compiler_Home + "compilers/objectmanagerthread.a"
+      CompilerCase #PB_OS_Windows   : #Power_ObjectManagerLib = #PB_Compiler_Home + "compilers\ObjectManagerThread.lib"
+    CompilerEndSelect
+  ;}
+CompilerEndSelect
+; Macro ImportFunction
+CompilerSelect #PB_Compiler_OS
+  CompilerCase #PB_OS_Linux ;{
+    Macro ImportFunction(Name, Param)
+      DQuote#Name#DQuote
+    EndMacro
+  ;}
+  CompilerCase #PB_OS_Windows ;{
+    Macro ImportFunction(Name, Param)
+      DQuote _#Name@Param#DQuote
+    EndMacro
+  ;}
+CompilerEndSelect
+; Import the ObjectManager library
+CompilerSelect #PB_Compiler_OS
+  CompilerCase #PB_OS_Linux : ImportC #Power_ObjectManagerLib
+  CompilerCase #PB_OS_Windows : Import #Power_ObjectManagerLib
+CompilerEndSelect
+  Object_GetOrAllocateID(Objects, Object.l) As ImportFunction(PB_Object_GetOrAllocateID, 8)
+  Object_GetObject(Objects, Object.l) As ImportFunction(PB_Object_GetObject,8)
+  Object_IsObject(Objects, Object.l) As ImportFunction(PB_Object_IsObject,8)
+  Object_EnumerateAll(Objects, ObjectEnumerateAllCallback, *VoidData) As ImportFunction(PB_Object_EnumerateAll,12)
+  Object_EnumerateStart(Objects) As ImportFunction(PB_Object_EnumerateStart,4)
+  Object_EnumerateNext(Objects, *object.Long) As ImportFunction(PB_Object_EnumerateNext,8)
+  Object_EnumerateAbort(Objects) As ImportFunction(PB_Object_EnumerateAbort,4)
+  Object_FreeID(Objects, Object.l) As ImportFunction(PB_Object_FreeID,8)
+  Object_Init(StructureSize.l, IncrementStep.l, ObjectFreeFunction) As ImportFunction(PB_Object_Init,12)
+  Object_GetThreadMemory(MemoryID.l) As ImportFunction(PB_Object_GetThreadMemory,4)
+  Object_InitThreadMemory(Size.l, InitFunction, EndFunction) As ImportFunction(PB_Object_InitThreadMemory,12)
+EndImport
 
-ImportC #PB_Compiler_Home + #ObjectManager
-  Object_GetOrAllocateID   (Objects, Object.l) As "PB_Object_GetOrAllocateID"
-  Object_GetObject       (Objects, Object.l) As "PB_Object_GetObject"
-  Object_IsObject        (Objects, Object.l) As "PB_Object_IsObject"
-  Object_EnumerateAll    (Objects, ObjectEnumerateAllCallback, *VoidData) As "PB_Object_EnumerateAll"
-  Object_EnumerateStart  (Objects) As "PB_Object_EnumerateStart"
-  Object_EnumerateNext   (Objects, *object.Long) As "PB_Object_EnumerateNext"
-  Object_EnumerateAbort  (Objects) As "PB_Object_EnumerateAbort"
-  Object_FreeID            (Objects, Object.l) As "PB_Object_FreeID"
-  Object_Init            (StructureSize.l, IncrementStep.l, ObjectFreeFunction) As "PB_Object_Init"
-  Object_GetThreadMemory (MemoryID.l) As "PB_Object_GetThreadMemory"
-  Object_InitThreadMemory(Size.l, InitFunction, EndFunction) As "PB_Object_InitThreadMemory"
-EndImport 
-; Import "Compilers/ObjectManager.a"
-;   Object_GetOrAllocateID  (Objects, Object.l) As "_PB_Object_GetOrAllocateID@8"
-;   Object_GetObject        (Objects, Object.l) As "_PB_Object_GetObject@8"
-;   Object_IsObject         (Objects, Object.l) As "_PB_Object_IsObject@8"
-;   Object_EnumerateAll     (Objects, ObjectEnumerateAllCallback, *VoidData) As "_PB_Object_EnumerateAll@12"
-;   Object_EnumerateStart   (Objects) As "_PB_Object_EnumerateStart@4"
-;   Object_EnumerateNext    (Objects, *object.Long) As "_PB_Object_EnumerateNext@8"
-;   Object_EnumerateAbort   (Objects) As "_PB_Object_EnumerateAbort@4"
-;   Object_FreeID           (Objects, Object.l) As "_PB_Object_FreeID@8"
-;   Object_Init             (StructureSize.l, IncrementStep.l, ObjectFreeFunction) As "_PB_Object_Init@12"
-;   Object_GetThreadMemory  (MemoryID.l) As "_PB_Object_GetThreadMemory@4"
-;   Object_InitThreadMemory (Size.l, InitFunction, EndFunction) As "_PB_Object_InitThreadMemory@12"
-; EndImport
-
-  ;IncludePath "Inc"
-   XIncludeFile "Inc/RNet_Res.pb"
+  IncludePath #PB_Compiler_FilePath
+  XIncludeFile "RNet_Res.pb"
   Declare RNet_Free(ID.l)
   ; FTP
   Declare RNet_FTP_Disconnect(ID.l)
@@ -52,14 +69,14 @@ EndImport
           \HTTP\Has_Proxy         = #False
           \HTTP\State             = #RNet_State_Idle
           \HTTP\Infos_HTTPVersion = "HTTP/1.1"
-        Case #RNet_Type_POP
-          \POP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
-        Case #RNet_Type_NNTP
-          \NNTP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
-        Case #RNet_Type_IMAP
-          \IMAP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
-        Case #RNet_Type_SMTP
-          \SMTP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
+;         Case #RNet_Type_POP
+;           \POP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
+;         Case #RNet_Type_NNTP
+;           \NNTP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
+;         Case #RNet_Type_IMAP
+;           \IMAP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
+;         Case #RNet_Type_SMTP
+;           \SMTP\Mail = AllocateMemory(SizeOf(S_RNet_Mail))
       EndSelect
     EndWith
     ProcedureReturn *RObject
@@ -71,11 +88,11 @@ EndImport
     Protected *RObject.S_RNet
   	If *RObject
   	  Select *RObject\type
-  	    Case #RNet_Type_FTP
-  	    ;{
-  	      If *RObject\FTP\Connexion <> 0
-  	        RNet_FTP_Disconnect(ID)
-  	      EndIf
+;   	    Case #RNet_Type_FTP
+;   	    ;{
+;   	      If *RObject\FTP\Connexion <> 0
+;   	        RNet_FTP_Disconnect(ID)
+;   	      EndIf
   	    ;}
   	  EndSelect
       RNet_FreeID(Id)
@@ -89,25 +106,15 @@ EndImport
     EndWith
   EndProcedure
 
-;   ProcedureDLL.l RNet_(Id.l)
-;     Protected *RObject.S_RNet = RNET_ID(Id)
-;     Debug Id
-;     Debug *RObject
-;     With *RObject
-;       Debug *RObject\HTTP\Has_Proxy
-;     EndWith
-;   EndProcedure
-  
-  XIncludeFile "RNet_CDDB.pb"
-  IncludePath "IncLib"
-  XIncludeFile "RNet_Mail.pb"
-  XIncludeFile "RNet_HTTP.pb"
-  XIncludeFile "RNet_FTP.pb"
-  XIncludeFile "RNet_POP.pb"
-  XIncludeFile "RNet_SMTP.pb"
-  XIncludeFile "RNet_Torrent.pb"
-  XIncludeFile "RNet_IMAP.pb"
-  XIncludeFile "RNet_NNTP.pb"
+  ;XIncludeFile "RNet_Inc_CDDB.pb"
+  ;XIncludeFile "RNet_Inc_FTP.pb"
+  ;XIncludeFile "RNet_Inc_HTTP.pb"
+  ;XIncludeFile "RNet_Inc_IMAP.pb"
+  ;XIncludeFile "RNet_Inc_Mail.pb"
+  ;XIncludeFile "RNet_Inc_NNTP.pb"
+  ;XIncludeFile "RNet_Inc_POP.pb"
+  ;XIncludeFile "RNet_Inc_SMTP.pb"
+  ;XIncludeFile "RNet_Inc_Torrent.pb"
   
 
   
