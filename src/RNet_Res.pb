@@ -47,9 +47,8 @@ EndEnumeration
 
 ;- Structures
 Structure S_RNet
-  ID.l
-  type.l
-  LastError.l
+  lType.l
+  lLastError.l
   StructureUnion
     HTTP.S_RNet_HTTP
 ;     IMAP.S_RNet_IMAP
@@ -67,13 +66,13 @@ EndStructure
 Macro RNET_ID(object)
   Object_GetObject(RNetObjects, object)
 EndMacro
-Macro RNET_ISID(object)
+Macro RNET_IS(object)
   Object_IsObject(RNetObjects, object) 
 EndMacro
 Macro RNET_NEW(object)
   Object_GetOrAllocateID(RNetObjects, object)
 EndMacro
-Macro RNET_FREEID(object)
+Macro RNET_FREE(object)
   If object <> #PB_Any And RNET_IS(object) = #True
     Object_FreeID(RNetObjects, object)
   EndIf
