@@ -1,26 +1,34 @@
-  IncludeFile "RNet.pb"
-  RNet_Init()
-  InitNetwork()
+InitNetwork()
+
+  Global sProxyIP.s       = "213.56.30.99"
+  Global lProxyPort.l     = 8080
+  Global sProxyUsername.s = "e-malherbe@sasmalt2.fr.fto"
+  Global sProxyPassword.s = "eamlh200"
+  Global bUseProxy.b      = #False
   
   Debug "===================================================1"
-  ; A very simple download (with bad proxy login & pass)
-  RNet_Create(1, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(1, "213.56.30.99", 8080, "e-malherbe@sasmalt2.fr.fto", "eamlh200")
-  
-  RNet_HTTP_Allocate(1, "http://www.and51.de/index.html")
+  ; A very simple download
+  RNet_CreateClient(1, #RNet_Type_HTTP)
+  If bUseProxy = #True
+    RNet_HTTP_SetProxy(1, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
+  EndIf
+  RNet_HTTP_SetTimeout(1, 1000)
+  RNet_HTTP_Allocate(1, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(1) = #RNet_State_Done
-  RNet_HTTP_SaveToFile(1, "C:\ZPerso\RNet\Samples\HTTP_Index_00.htm")
+  RNet_HTTP_SaveToFile(1, "HTTP_Index_00.htm", #False)
   RNet_Free(1)
   
   Debug "===================================================2"
   ; Get informations about page
-  RNet_Create(2, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(2, "213.56.30.99", 8080, "e-malherbe@sasmalt2.fr.fto", "eamlh200")
-  *greetings=AllocateMemory(100)
+  RNet_CreateClient(2, #RNet_Type_HTTP)
+  If bUseProxy = #True
+    RNet_HTTP_SetProxy(2, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
+  EndIf
+  *greetings = AllocateMemory(100)
   PokeS(*greetings, "Hello from PureBasic!")
 
-  RNet_HTTP_Allocate(2, "http://www.and51.de/index.html")
+  RNet_HTTP_Allocate(2, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(2) = #RNet_State_Done
   RNet_HTTP_Examine(2)
@@ -31,50 +39,54 @@
   
   Debug "===================================================3"
   ; Define informations  
-  RNet_Create(3, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(3, "213.56.30.99", 8080, "e-malherbe@sasmalt2.fr.fto", "eamlh200")
+  RNet_CreateClient(3, #RNet_Type_HTTP)
+  If bUseProxy = #True
+    RNet_HTTP_SetProxy(3, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
+  EndIf
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_UserAgent, "RNet for PureBasic")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_Range, "50")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_CacheControl, "only-if-chaced")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_Referer, "http://www.purebasic.com/")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_HTTPVersion, "HTTP/1.1")
   
-  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html")
+  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
   RNet_HTTP_ResetAllocation(3)
   
   Debug "----"
-  RNet_HTTP_Allocate(3, "http://www.google.fr")
+  RNet_HTTP_Allocate(3, "http://www.google.fr", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
   RNet_HTTP_ResetAllocation(3)
   
   Debug "----"
-  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html")
+  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
   RNet_HTTP_ResetAllocation(3)
   
   Debug "----"
-  RNet_HTTP_Allocate(3, "http://www.google.fr")
+  RNet_HTTP_Allocate(3, "http://www.google.fr", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
-  RNet_HTTP_SaveToFile(3, "C:\ZPerso\RNet\Samples\HTTP_Index_01.htm")
+  RNet_HTTP_SaveToFile(3, "HTTP_Index_01.htm", #True)
   RNet_Free(3)
   
   Debug "===================================================4"
   ; Get informations about page
-  RNet_Create(4, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(4, "213.56.30.99", 8080, "e-malherbe@sasmalt2.fr.fto", "eamlh200")
+  RNet_CreateClient(4, #RNet_Type_HTTP)
+  If bUseProxy = #True
+    RNet_HTTP_SetProxy(4, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
+  EndIf
   *greetings=AllocateMemory(100)
   PokeS(*greetings, "Hello from PureBasic!")
 
-  RNet_HTTP_Allocate(4, "http://www.and51.de/index.html")
+  RNet_HTTP_Allocate(4, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(4) = #RNet_State_Done
   *Buffer = AllocateMemory(Size)
@@ -84,21 +96,25 @@
 
   Debug "===================================================5"
   ; A very simple download (with bad proxy login & pass)
-  RNet_Create(5, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(5, "213.56.30.99", 8080, "e-malherb@ssmalt2.fr.fto", "emlh200")
-  
-  RNet_HTTP_Allocate(5, "http://www.and51.de/index.html")
+  RNet_CreateClient(5, #RNet_Type_HTTP)
+   If bUseProxy = #True
+    RNet_HTTP_SetProxy(5, sProxyIP, lProxyPort, sProxyUsername, "badpassword")
+  EndIf
+
+  RNet_HTTP_Allocate(5, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(5) = #RNet_State_Done
-  RNet_HTTP_SaveToFile(5, "C:\ZPerso\RNet\Samples\HTTP_Index_02.htm")
+  RNet_HTTP_SaveToFile(5, "HTTP_Index_02.htm", #True)
   RNet_Free(5)
   
   Debug "===================================================6"
   ; A very simple download (with bad URL)
-  RNet_Create(6, #RNet_Type_HTTP)
-  RNet_HTTP_SetProxy(6, "213.66.30.99", 8080, "e-malherbe@sesmalt2.fr.fto", "emlh200")
+  RNet_CreateClient(6, #RNet_Type_HTTP)
+  If bUseProxy = #True
+    RNet_HTTP_SetProxy(6, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
+  EndIf
   RNet_HTTP_SetTimeout(6, 10)
-  RNet_HTTP_Allocate(6, "http://www.and51.de/index.rieb")
+  RNet_HTTP_Allocate(6, "http://www.and51.de/index.rieb", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(6) = #RNet_State_Done
   If RNet_GetLastError(6) = #RNet_Error_TimeOut
@@ -106,8 +122,3 @@
   EndIf
   RNet_Free(6)
   
-; IDE Options = PureBasic 4.10 (Windows - x86)
-; CursorPosition = 41
-; FirstLine = 27
-; Folding = -
-; EnableThread
