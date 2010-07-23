@@ -2,9 +2,9 @@ IncludePath #PB_Compiler_FilePath
 XIncludeFile "RNet_Res_HTTP.pb"
 
 ;- Constantes
-#RNet_Const_CRLF    = Chr(13)+Chr(10)
-#RNet_Const_Quote  = Chr(34)
-#RNet_Const_Tab       = Chr(9)
+#RNet_Const_CRLF  = Chr(13)+Chr(10)
+#RNet_Const_Quote = Chr(34)
+#RNet_Const_Tab   = Chr(9)
 
 ;- Enumerations
 Enumeration 1 ; RNet_Type
@@ -47,18 +47,19 @@ EndEnumeration
 
 ;- Structures
 Structure S_RNet
+  sObject.s
   lType.l
   lLastError.l
   StructureUnion
-    HTTP.S_RNet_HTTP
-;     IMAP.S_RNet_IMAP
-;     FTP.S_RNet_FTP
-;     NNTP.S_RNet_NNTP
-;     NTP.S_RNet_NTP
-;     POP.S_RNet_POP
-;     SMTP.S_RNet_SMTP
-;     Torrent.S_RNet_Torrent
-;     CDDB.S_RNet_CDDB
+    S_HTTP.S_RNet_HTTP
+;     S_IMAP.S_RNet_IMAP
+;     S_FTP.S_RNet_FTP
+;     S_NNTP.S_RNet_NNTP
+;     S_NTP.S_RNet_NTP
+;     S_POP.S_RNet_POP
+;     S_SMTP.S_RNet_SMTP
+;     S_Torrent.S_RNet_Torrent
+;     S_CDDB.S_RNet_CDDB
   EndStructureUnion
 EndStructure
 
@@ -72,7 +73,7 @@ EndMacro
 Macro RNET_NEW(object)
   Object_GetOrAllocateID(RNetObjects, object)
 EndMacro
-Macro RNET_FREE(object)
+Macro RNET_FREEID(object)
   If object <> #PB_Any And RNET_IS(object) = #True
     Object_FreeID(RNetObjects, object)
   EndIf
@@ -81,5 +82,5 @@ Macro RNET_INITIALIZE(hCloseFunction)
   Object_Init(SizeOf(S_RNet), 1, hCloseFunction)
 EndMacro
 Macro RNet_SetLastError(Error)
-  *RObject\LastError = Error
+  *RObject\lLastError = Error
 EndMacro

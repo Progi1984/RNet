@@ -23,9 +23,9 @@ Enumeration 1 ; RNet_HTTP_Attribute_FileSize
   #RNet_HTTP_Attribute_SetCookie
 EndEnumeration
 Enumeration 1 ; RNet_HTTP_Request_Get
-  #RNet_HTTP_Request_Get
-  #RNet_HTTP_Request_Post
-  #RNet_HTTP_Request_Head
+  #RNet_HTTP_Request_GET
+  #RNet_HTTP_Request_POST
+  #RNet_HTTP_Request_HEAD
 EndEnumeration
 
 Structure S_RNet_HTTP
@@ -33,20 +33,20 @@ Structure S_RNet_HTTP
   Timeout.l
   
   ; Proxy
-  Has_Proxy.l
-  Proxy_IP.s
-  Proxy_Port.l
-  Proxy_Login.s
-  Proxy_Pass.s
+  bIsProxy.b
+  sProxy_IP.s
+  sProxy_Port.l
+  sProxy_Login.s
+  sProxy_Pass.s
   
   ; Page
-  URL.s
-  Host.s
-  Port.l
-  Path.s
+  sPageURL.s
+  sPageHost.s
+  lPagePort.l
+  sPagePath.s
   
-  ContentReturned.s
-  ContentBody.s
+  sContentReturned.s
+  sContentBody.s
   
   Post_Data.l
   Post_Data_Len.l

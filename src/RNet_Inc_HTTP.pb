@@ -5,7 +5,8 @@
     Protected Connexion.l
     Protected RequestGet.s, LoginLen.l, EncodingProxyAuth.s, Login.s
     Protected EndTime.l
-    With *RObject\HTTP
+    Protected sReceivedData.s
+    With *RObject\S_HTTP
       \State     = #RNet_State_Running
       EndTime   = Date()  + \TimeOut
       If \Has_Proxy = #True
@@ -34,26 +35,37 @@
       \ContentBody = ""
       Repeat
         If NetworkClientEvent(Connexion) = #PB_NetworkEvent_Data
-          *Buffer = AllocateMemory(1024)
-          ReturnData = ReceiveNetworkData(Connexion, *Buffer, 1024)
-          \ContentReturned + PeekS(*Buffer)
-          If ReturnData < 1024
-            Main = #True
-            \State = #RNet_State_Done
-            *RObject\LastError = #RNet_Error_OK
+          *Buffer           = AllocateMemory(1024)
+          ReturnData        = ReceiveNetworkData(Connexion, *Buffer, 1024)
+          sReceivedData     = PeekS(*Buffer)
+          \ContentReturned  + sReceivedData
+          MessageRequester("", sReceivedData)
+          If ReturnData < 1024  
+            If FindString(\ContentReturned, "chunked", 0) = 0
+              Main = #True
+              \State = #RNet_State_Done
+              *RObject\lLastError = #RNet_Error_OK
+            ElseIf (FindString(\ContentReturned, "chunked", 0) > 0 And Right(\ContentReturned, 5) = "0" + #RNet_Const_CRLF + #RNet_Const_CRLF)
+              Main = #True
+              \State = #RNet_State_Done
+              *RObject\lLastError = #RNet_Error_OK
+            Else
+              MessageRequester("", sReceivedData)
+            EndIf
           EndIf
         Else
           If Date() > EndTime And \TimeOut > 0
             Main = #True
             \State = #RNet_State_Done
-            *RObject\LastError = #RNet_Error_TimeOut
+            *RObject\lLastError = #RNet_Error_TimeOut
           EndIf
         EndIf
       Until Main = #True
       ;Debug \ContentReturned
       \Infos_HTTPVersion  = StringField(StringField(\ContentReturned, 1, CRLF), 1, " ")
       \Infos_HTTPCode     = StringField(StringField(\ContentReturned, 1, CRLF), 2, " ")
-      CloseNetworkConnection(Connexion): Connexion = 0
+      CloseNetworkConnection(Connexion)
+      Connexion = 0
       
     EndWith
     ProcedureReturn #True
@@ -63,7 +75,7 @@
     Protected CRLF.s          = Chr(13) + Chr(10)
     Protected Connexion.l
     Protected RequestGet.s, LoginLen.l, EncodingProxyAuth.s, Login.s, IsThere.l, Header.s
-    With *RObject\HTTP
+    With *RObject\S_HTTP
       \State     = #RNet_State_Running
       If \Has_Proxy = #True
         Connexion = OpenNetworkConnection(\Proxy_IP, \Proxy_Port)
@@ -114,7 +126,7 @@
               If Len(\ContentReturned) - IsThere >= Val(\Infos_ContentLength)
                 Main = #True
                 \State = #RNet_State_Done
-                *RObject\LastError = #RNet_Error_OK
+                *RObject\lLastError = #RNet_Error_OK
               EndIf
             EndIf
           EndIf
@@ -122,7 +134,7 @@
           If Date() > EndTime And \TimeOut > 0
             Main = #True
             \State = #RNet_State_Done
-            *RObject\LastError = #RNet_Error_TimeOut
+            *RObject\lLastError = #RNet_Error_TimeOut
           EndIf
         EndIf
       Until Main = #True
@@ -138,7 +150,7 @@
     Protected CRLF.s          = Chr(13) + Chr(10)
     Protected Connexion.l
     Protected RequestGet.s, LoginLen.l, EncodingProxyAuth.s, Login.s
-    With *RObject\HTTP
+    With *RObject\S_HTTP
       \State     = #RNet_State_Running
       Debug "Running"
       If \Has_Proxy = #True
@@ -178,13 +190,13 @@
           If ReturnData < 1024
             Main = #True
             \State = #RNet_State_Done
-            *RObject\LastError = #RNet_Error_OK
+            *RObject\lLastError = #RNet_Error_OK
           EndIf
         Else
           If Date() > EndTime And \TimeOut > 0
             Main = #True
             \State = #RNet_State_Done
-            *RObject\LastError = #RNet_Error_TimeOut
+            *RObject\lLastError = #RNet_Error_TimeOut
           EndIf
         EndIf
       Until Main = #True
@@ -195,36 +207,40 @@
     EndWith
     ProcedureReturn #True
   EndProcedure
+
 ;- Public
-  ProcedureDLL RNet_HTTP_SetProxy(ID.l, Proxy.s = "", Port.l = 80, Login.s = "", Password.s = "")
+  DeclareDLL RNet_HTTP_Examine(ID.l)
+  ;@todo : Moebius 1.5 : Proxy.s = "", Port.l = 80, Login.s = "", Password.s = ""
+  ProcedureDLL RNet_HTTP_SetProxy(ID.l, sProxy.s, lPort.l, sLogin.s, sPassword.s)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
       With *RObject
-        If Proxy.s = "" And Port.l = 80 And Login.s = "" And Password.s = ""
-          \HTTP\Has_Proxy  = #False
-          \HTTP\Proxy_IP   = ""
-          \HTTP\Proxy_Port = 80
-          \HTTP\Proxy_Login= ""
-          \HTTP\Proxy_Pass = ""
+        If sProxy.s = "" And lPort.l = 80 And sLogin.s = "" And sPassword.s = ""
+          \S_HTTP\Has_Proxy  = #False
+          \S_HTTP\Proxy_IP   = ""
+          \S_HTTP\Proxy_Port = 80
+          \S_HTTP\Proxy_Login= ""
+          \S_HTTP\Proxy_Pass = ""
         Else
-          \HTTP\Has_Proxy  = #True
-          \HTTP\Proxy_IP   = Proxy
-          \HTTP\Proxy_Port = Port
-          \HTTP\Proxy_Login= Login
-          \HTTP\Proxy_Pass = Password
+          \S_HTTP\Has_Proxy  = #True
+          \S_HTTP\Proxy_IP   = sProxy
+          \S_HTTP\Proxy_Port = lPort
+          \S_HTTP\Proxy_Login= sLogin
+          \S_HTTP\Proxy_Pass = sPassword
         EndIf
       EndWith
     Else
       ProcedureReturn -1
     EndIf
   EndProcedure
-  ProcedureDLL RNet_HTTP_Allocate(ID.l, URL.s, Request.l = #RNet_HTTP_Request_Get)
+  ;@todo : Moebius 1.5 : Request.l = #RNet_HTTP_Request_GET
+  ProcedureDLL RNet_HTTP_Allocate(ID.l, URL.s, Request.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
       Protected Host.s
       Protected Path.s
       Protected Port.l = 80 ; Port number
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         \URL = URL
         If FindString(\URL, "http://", 1) = 1 : URL = Right(\URL, Len(\URL)-7) : EndIf
         Pos = FindString(URL, "/", 1)
@@ -245,11 +261,11 @@
         \Path = Path
       EndWith
       Select Request
-        Case #RNet_HTTP_Request_Get
+        Case #RNet_HTTP_Request_GET
           CreateThread(@RNet_HTTP_RequestGET_Thread(), ID)
-        Case #RNet_HTTP_Request_Post
+        Case #RNet_HTTP_Request_POST
           CreateThread(@RNet_HTTP_RequestPOST_Thread(), ID)
-        Case #RNet_HTTP_Request_Head
+        Case #RNet_HTTP_Request_HEAD
           CreateThread(@RNet_HTTP_RequestHEAD_Thread(), ID)
         Default
           CreateThread(@RNet_HTTP_RequestGET_Thread(), ID)
@@ -261,7 +277,7 @@
   ProcedureDLL RNet_HTTP_GetState(ID.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         ProcedureReturn \State
       EndWith
     Else
@@ -271,7 +287,7 @@
   ProcedureDLL RNet_HTTP_ResetAllocation(ID.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         \ContentReturned  = ""
         \State            = #RNet_State_Idle    
       EndWith
@@ -280,16 +296,22 @@
       ProcedureReturn -1
     EndIf
   EndProcedure
-
-  ProcedureDLL RNet_HTTP_SaveToFile(ID.l, Filename.s)
+  ;@todo : Moebius 1.5 : bJustBody.b = #True
+  ProcedureDLL RNet_HTTP_SaveToFile(ID.l, Filename.s, bJustBody.b)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
       Protected Output.l
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         Output = OpenFile(#PB_Any, FileName)
         If Output
-          Debug \ContentReturned
-          WriteString(Output, \ContentReturned)
+          If bJustBody = #False
+            WriteString(Output, \ContentReturned)
+          Else
+            If \ContentBody = ""
+              RNet_HTTP_Examine(ID)
+            EndIf
+            WriteString(Output, \ContentBody)
+          EndIf
           CloseFile(Output)
           ProcedureReturn #True
         Else
@@ -305,7 +327,7 @@
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
       Protected Output.l
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         If MemorySize(Buffer) >= Len(\ContentBody)
           PokeS(Buffer, \ContentBody, Len(\ContentBody), #PB_Ascii)
           ProcedureReturn #True
@@ -324,7 +346,7 @@
       Protected CRLF.s          = Chr(13) + Chr(10)
       Protected Line.s
       Protected GoToBody.l =#False
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         For Inc = 1 To CountString(\ContentReturned, CRLF)+1
           If GoToBody = #False
             Line = StringField(\ContentReturned, Inc, CRLF)
@@ -351,9 +373,9 @@
               Case "transfer-encoding"
                 \Infos_TransferEncoding = Trim(StringField(Line, 2, ":"))
               Case "cache-control"
-                \Infos_CacheControl = Trim(StringField(Line, 2, ":"))
+                \Infos_CacheControl     = Trim(StringField(Line, 2, ":"))
               Case "set-cookie"
-                \Infos_SetCookie = Trim(StringField(Line, 2, ":"))
+                \Infos_SetCookie        = Trim(StringField(Line, 2, ":"))
               Case ""
                 GoToBody = #True
               Default
@@ -376,7 +398,7 @@
   ProcedureDLL.s RNet_HTTP_GetAttribute(ID.l, AttributeType.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         Select AttributeType
           Case #RNet_HTTP_Attribute_FileSize
             ProcedureReturn Str(Len(\ContentBody))
@@ -423,7 +445,7 @@
   ProcedureDLL RNet_HTTP_SetAttribute(ID.l, AttributeType.l, AttributContent.s)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         Select AttributeType
           Case #RNet_HTTP_Attribute_UserAgent
             \Infos_UserAgent    = AttributContent
@@ -448,7 +470,7 @@
   ProcedureDLL RNet_HTTP_ResetAttribute(ID.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         \ContentReturned    = ""
         \Infos_HTTPVersion  = ""
         \Infos_HTTPCode     = ""
@@ -471,7 +493,7 @@
   ProcedureDLL RNet_HTTP_SetPostData(ID.l, Buffer.l, Length.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         \Post_Data      = AllocateMemory(Length)
         CopyMemory(Buffer, \Post_Data, Length)
         \Post_Data_Len  = Length
@@ -484,7 +506,7 @@
   ProcedureDLL RNet_HTTP_SetTimeout(ID.l, Timeout.l)
     Protected *RObject.S_RNet = RNET_ID(ID)
     If *RObject <>  #Null
-      With *RObject\HTTP
+      With *RObject\S_HTTP
         \Timeout  = Timeout
       EndWith
       ProcedureReturn #True
@@ -493,19 +515,14 @@
     EndIf
   EndProcedure
   
-  ProcedureDLL RNet_HTTP_(ID.l)
-    Protected *RObject.S_RNet = RNET_ID(ID)
-    If *RObject <>  #Null
-      With *RObject\HTTP
-  
-      EndWith
-      ProcedureReturn #True
-    Else
-      ProcedureReturn -1
-    EndIf
-  EndProcedure
-
-; IDE Options = PureBasic 4.20 (Linux - x86)
-; CursorPosition = 506
-; Folding = CAMAAAAAAc4PAAA-
-; UseMainFile = RNet_Ex_HTTP_00.pb
+;   ProcedureDLL RNet_HTTP_(ID.l)
+;     Protected *RObject.S_RNet = RNET_ID(ID)
+;     If *RObject <>  #Null
+;       With *RObject\S_HTTP
+;   
+;       EndWith
+;       ProcedureReturn #True
+;     Else
+;       ProcedureReturn -1
+;     EndIf
+;   EndProcedure
