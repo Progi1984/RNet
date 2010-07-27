@@ -35,7 +35,7 @@ Structure S_RNet_HTTP
   ; Proxy
   bIsProxy.b
   sProxy_IP.s
-  sProxy_Port.l
+  lProxy_Port.l
   sProxy_Login.s
   sProxy_Pass.s
   
@@ -48,24 +48,24 @@ Structure S_RNet_HTTP
   sContentReturned.s
   sContentBody.s
   
-  Post_Data.l
-  Post_Data_Len.l
+  lPostData.l
+  lPostData_Len.l
   
-  Infos_HTTPVersion.s
-  Infos_HTTPCode.s
-  Infos_AcceptRanges.s
-  Infos_Date.s
-  Infos_ContentLength.s
-  Infos_ContentType.s
-  Infos_Server.s
-  Infos_LastModified.s
-  Infos_Etag.s
-  Infos_Via.s
-  Infos_Age.s
-  Infos_UserAgent.s
-  Infos_Range.s
-  Infos_CacheControl.s
-  Infos_Referer.s
-  Infos_TransferEncoding.s
-  Infos_SetCookie.s
+  sInfosHTTPVersion.s
+  sInfosHTTPCode.s
+  sInfosAcceptRanges.s
+  sInfosDate.s
+  sInfosContentLength.s
+  sInfosContentType.s
+  sInfosServer.s
+  sInfosLastModified.s
+  sInfosEtag.s
+  sInfosVia.s
+  sInfosAge.s
+  sInfosUserAgent.s
+  sInfosRange.s
+  sInfosCacheControl.s
+  sInfosReferer.s
+  sInfosTransferEncoding.s
+  sInfosSetCookie.s
 EndStructure

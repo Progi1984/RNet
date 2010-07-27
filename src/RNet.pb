@@ -72,9 +72,9 @@ ProcedureDLL.l RNet_CreateClient(ID.l, lType.l)
       \lType      =	lType
       Select \lType
         Case #RNet_Type_HTTP
-          \S_HTTP\Has_Proxy         = #False
+          \S_HTTP\bIsProxy          = #False
           \S_HTTP\State             = #RNet_State_Idle
-          \S_HTTP\Infos_HTTPVersion = "HTTP/1.1"
+          \S_HTTP\sInfosHTTPVersion = "HTTP/1.1"
       EndSelect
   	EndWith
     ProcedureReturn *RObject

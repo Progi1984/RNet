@@ -16,9 +16,8 @@ InitNetwork()
   RNet_HTTP_Allocate(1, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(1) = #RNet_State_Done
-  RNet_HTTP_SaveToFile(1, "HTTP_Index_00.htm", #False)
+  RNet_HTTP_SaveToFile(1, "HTTP_Index_00.htm", #True)
   RNet_Free(1)
-  
   Debug "===================================================2"
   ; Get informations about page
   RNet_CreateClient(2, #RNet_Type_HTTP)
@@ -28,13 +27,13 @@ InitNetwork()
   *greetings = AllocateMemory(100)
   PokeS(*greetings, "Hello from PureBasic!")
 
-  RNet_HTTP_Allocate(2, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
+  RNet_HTTP_Allocate(2, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(2) = #RNet_State_Done
   RNet_HTTP_Examine(2)
     Size = Val(RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_Size))
-    Debug Size
-    Debug RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_LastModified)
+    Debug "Size > " + Str(Size)
+    Debug "LastModified > " + RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_LastModified)
   RNet_Free(2)
   
   Debug "===================================================3"
@@ -45,11 +44,11 @@ InitNetwork()
   EndIf
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_UserAgent, "RNet for PureBasic")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_Range, "50")
-  RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_CacheControl, "only-if-chaced")
+  RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_CacheControl, "only-if-cached")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_Referer, "http://www.purebasic.com/")
   RNet_HTTP_SetAttribute(3, #RNet_HTTP_Attribute_HTTPVersion, "HTTP/1.1")
   
-  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
+  RNet_HTTP_Allocate(3, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
@@ -63,7 +62,7 @@ InitNetwork()
   RNet_HTTP_ResetAllocation(3)
   
   Debug "----"
-  RNet_HTTP_Allocate(3, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
+  RNet_HTTP_Allocate(3, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
@@ -83,10 +82,8 @@ InitNetwork()
   If bUseProxy = #True
     RNet_HTTP_SetProxy(4, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
   EndIf
-  *greetings=AllocateMemory(100)
-  PokeS(*greetings, "Hello from PureBasic!")
 
-  RNet_HTTP_Allocate(4, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
+  RNet_HTTP_Allocate(4, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(4) = #RNet_State_Done
   *Buffer = AllocateMemory(Size)
@@ -97,7 +94,7 @@ InitNetwork()
   Debug "===================================================5"
   ; A very simple download (with bad proxy login & pass)
   RNet_CreateClient(5, #RNet_Type_HTTP)
-   If bUseProxy = #True
+  If bUseProxy = #True
     RNet_HTTP_SetProxy(5, sProxyIP, lProxyPort, sProxyUsername, "badpassword")
   EndIf
 
@@ -114,9 +111,10 @@ InitNetwork()
     RNet_HTTP_SetProxy(6, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
   EndIf
   RNet_HTTP_SetTimeout(6, 10)
-  RNet_HTTP_Allocate(6, "http://www.and51.de/index.rieb", #RNet_HTTP_Request_GET)
+  RNet_HTTP_Allocate(6, "http://www.index.rieb", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(6) = #RNet_State_Done
+  Debug RNet_GetLastError(6)
   If RNet_GetLastError(6) = #RNet_Error_TimeOut
     Debug "Error TimeOut"
   EndIf
