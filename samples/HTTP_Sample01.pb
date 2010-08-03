@@ -1,8 +1,10 @@
   InitNetwork()
-
+  XIncludeFile "../src/RNet_Res.pb"
+  XIncludeFile "../src/RNet.pb"
+  RNet_Init()
+  
   ; A very simple request POST
   RNet_CreateClient(1, #RNet_Type_HTTP)
-  ;RNet_HTTP_SetProxy(1, "213.56.30.99", 8080, "e-malherbe@sasmalt2.fr.fto", "eamlh200")
   
   RNet_HTTP_SetAttribute(1, #RNet_HTTP_Attribute_ContentType, "application/x-www-form-urlencoded")
   RNet_HTTP_SetPostData(1, @"saisie2=test", Len("saisie2=test"))

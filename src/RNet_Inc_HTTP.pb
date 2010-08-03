@@ -447,9 +447,6 @@
           If Left(\sContentBody, 1) = Chr(10)
             \sContentBody = Right(\sContentBody, Len(\sContentBody) - 1)
           EndIf
-          \sContentBody = ReplaceString(\sContentBody, Chr(174), "")
-          \sContentBody = ReplaceString(\sContentBody, Chr(1), "")
-          \sContentBody = ReplaceString(\sContentBody, Chr(129), "")
         Next
         ProcedureReturn #True
       EndWith

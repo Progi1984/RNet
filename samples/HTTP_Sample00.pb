@@ -1,10 +1,13 @@
 InitNetwork()
+XIncludeFile "../src/RNet_Res.pb"
+XIncludeFile "../src/RNet.pb"
+RNet_Init()
 
-  Global sProxyIP.s       = "213.56.30.99"
-  Global lProxyPort.l     = 8080
-  Global sProxyUsername.s = "e-malherbe@sasmalt2.fr.fto"
-  Global sProxyPassword.s = "eamlh200"
-  Global bUseProxy.b      = #False
+  Global sProxyIP.s = ""
+  Global lProxyPort.l = 0
+  Global sProxyUsername.s = ""
+  Global sProxyPassword.s = ""
+  Global bUseProxy.b = #False
   
   Debug "===================================================1"
   ; A very simple download
@@ -16,7 +19,7 @@ InitNetwork()
   RNet_HTTP_Allocate(1, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(1) = #RNet_State_Done
-  RNet_HTTP_SaveToFile(1, "HTTP_Index_00.htm", #True)
+  RNet_HTTP_SaveToFile(1, "results/HTTP_Index_00.htm", #True)
   RNet_Free(1)
   Debug "===================================================2"
   ; Get informations about page
@@ -24,15 +27,11 @@ InitNetwork()
   If bUseProxy = #True
     RNet_HTTP_SetProxy(2, sProxyIP, lProxyPort, sProxyUsername, sProxyPassword)
   EndIf
-  *greetings = AllocateMemory(100)
-  PokeS(*greetings, "Hello from PureBasic!")
-
   RNet_HTTP_Allocate(2, "http://www.rootslabs.net", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(2) = #RNet_State_Done
   RNet_HTTP_Examine(2)
-    Size = Val(RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_Size))
-    Debug "Size > " + Str(Size)
+    Debug "Size > " + Str(Val(RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_Size)))
     Debug "LastModified > " + RNet_HTTP_GetAttribute(2, #RNet_HTTP_Attribute_LastModified)
   RNet_Free(2)
   
@@ -73,7 +72,7 @@ InitNetwork()
   Repeat
   Until RNet_HTTP_GetState(3) = #RNet_State_Done
   RNet_HTTP_Examine(3)
-  RNet_HTTP_SaveToFile(3, "HTTP_Index_01.htm", #True)
+  RNet_HTTP_SaveToFile(3, "results/HTTP_Index_01.htm", #True)
   RNet_Free(3)
   
   Debug "===================================================4"
@@ -101,7 +100,7 @@ InitNetwork()
   RNet_HTTP_Allocate(5, "http://www.and51.de/index.html", #RNet_HTTP_Request_GET)
   Repeat
   Until RNet_HTTP_GetState(5) = #RNet_State_Done
-  RNet_HTTP_SaveToFile(5, "HTTP_Index_02.htm", #True)
+  RNet_HTTP_SaveToFile(5, "results/HTTP_Index_02.htm", #True)
   RNet_Free(5)
   
   Debug "===================================================6"
